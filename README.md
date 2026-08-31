@@ -1,114 +1,51 @@
-# Snapchat Story Downloader
+﻿# Snapchat Map Scraper KC — Mentor / Operational Fork
 
-This program can search Snapchat's public [Snap Map](https://map.snapchat.com/)
-at multiple locations and download all stories for later investigation and
-categorization. A lot is unknown about how Snapchat decides which videos show
-up at which "point" on the map, so the scraper can also randomize the geolocation
-where it scrapes from by a few hundred meters to hopefully convince the API
-to give you a few more relevant videos.
+> **Status:** `[ARCHIVED]` — Pre-ChatGPT Open-Source Adaptation & Local Media Scraper (June 2022) — No Longer Maintained  
+> **Original Upstream Repository:** [`nemec/snapchat-map-scraper`](https://github.com/nemec/snapchat-map-scraper) by Dan Nemec  
+> **Stack:** Python 3, SQLite, Requests, Requests-Futures, Snap Map HTTP Endpoints
 
-This has been tested on Linux, but should work on Windows/Mac as well with
-a video viewer installed.
+This repository is an archived **June 2022 operational fork** of Dan Nemec's open-source `snapchat-map-scraper`. It was adapted for collecting, archiving, reviewing, and classifying geographically targeted public Snap Map media in the Kansas City area.
 
+---
 
-## Install Instructions
+## Provenance & Historical Context
 
-```bash
-git clone https://github.com/nemec/snapchat-map-scraper.git
-cd snapchat-map-scraper/
-python3 -m venv env  # create virtual environment
-source env/bin/activate  # activate virtual environment
-pip3 install -r requirements.txt
+This repository is not software written from scratch. It is a preserved fork demonstrating a real-world software engineering workflow from the pre-generative-AI era (~5 months before ChatGPT was released in November 2022):
+1. **Discovering Open Source:** Finding an existing tool addressing an undocumented external API.
+2. **Code Comprehension & Deployment:** Understanding unfamiliar architecture and deploying it locally against live geospatial targets.
+3. **Operational Diagnosis & Patching:** Encountering real-world duplication bugs during media review workflows, diagnosing the root cause, and patching the system (`SELECT DISTINCT` query fix in commit `36f2e82` on June 14, 2022).
+
+---
+
+## How It Worked
+
+```text
+Target Coordinates (Lat / Long / Radius)
+           │
+           ▼
+Snap Map Web Service (getLatestTileSet & getPlaylist)
+           │
+           ▼
+Public Geographic Stories / Media JSON
+           │
+           ▼
+Download Media, Preview & Overlay Assets
+           │
+           ▼
+SQLite Catalog (Deduplication & Polling History)
+           │
+           ▼
+CLI Review, Classification & Media Export
 ```
 
+- Polled target geographic points with jitter/perturbation.
+- Persisted metadata, timestamps, locations, and downloaded media files into a local SQLite database.
+- Interactive CLI review interface for filtering, classifying, and exporting clips.
 
-## Usage
+---
 
-Follow each step in order. Also, ensure you have activated your virtual
-environment, otherwise the packages will be missing.
+## Why Development Has Ended
 
-### Create Database
-
-This database holds data related to one group of search queries. Since SQLite
-produces database files with little overhead, you should create a new database
-each time you want to sample data.
-
-```bash
-python3 story_downloader.py create snap.db
-```
-
-### Add locations
-
-The add command will add a new location to the database. The program will later
-scrape and log snaps from all of the added locations so that you can track multiple
-spots at once. Find the latitude and longitude of your point of interest (this
-can easily be found on Snap Map, as seen below) and replace them in the command
-below. The label makes it easier to remember where a point is.
-
-```bash
-python3 story_downloader.py add --database snap.db --label "downtown dallas" 32.783038 -96.796388
-# Added downtown dallas to database
-```
-
-![snap map](snap-map.png)
-
-### Scraping media
-
-The scrape command iterates through all of the added locations and downloads
-snaps at that location. Previews, videos, and overlays are all downloaded
-but the review command can only deal with video at the moment.
-
-Optional arguments:
-
-* `--randomize` will randomize the geo location within 500m, intended to prompt
-    Snapchat's API to send new videos that it hasn't yet served. I have no idea
-    why Snapchat only sends a subset of the total videos for a single point,
-    probably to make the service more scalable.
-* `--repeat` will cause the application to loop infinitely looking for new videos.
-    Leave it running overnight to collect as much as possible.
-* `--sleep` will modify how long the application sleeps before repeating. Defaults
-    to 120 seconds and only takes effect if `--repeat` is included.
-* A label can also be added as a positional argument to only scrape one location.
-    Example: `python3 story_downloader.py scrape "downtown dallas"`
-
-```bash
-python3 story_downloader.py scrape --database snap.db --randomize --repeat
-# Scraped 16 media from location downtown dallas
-# Sleeping for 120 seconds...
-```
-
-### Review media
-
-The review command looks through all unreviewed videos and opens each one in
-a video player for review. Once you have closed the video player process,
-the CLI will prompt you for a "classification". This can be any text describing
-the situation in the video or a tag, etc. If the video is irrelevant, leave
-the classification blank and just hit "Enter". Once all remaining videos are
-classified, the application will exit. Depending on your operating system, 
-
-
-```bash
-python3 story_downloader.py review --database snap.db
-# Classify or leave blank: police protesters
-# 15 remaining
-# Classify or leave blank:
-# 14 remaining
-# Classify or leave blank: fire
-# 13 remaining
-# ...
-```
-
-
-### Export media
-
-The export command will copy all videos which are "classified" to a new folder
-for further review/editing/publishing.
-
-```bash
-python3 story_downloader.py export --database snap.db export/
-# 3 video(s) exported
-ls export/
-# 2020-05-29-04:26:30-fire.mp4
-# 2020-05-30-12:26:57-crowd.mp4
-# '2020-05-30-21:16:22-line of people.mp4'
-```
+- **External Interface Retired:** Snapchat removed the public web version of Snap Map and transitioned it to mobile-only, closing the undocumented web acquisition surface.
+- **Contractual & Platform Restrictions:** Current Snap terms explicitly prohibit automated scraping, and no general-purpose public geographic search API is offered.
+- **No Resumption Planned:** Preserved as an immutable historical artifact. No dependency modernization or reverse-engineering of private mobile APIs will occur.
